@@ -2,30 +2,40 @@
 
 #define BOMB_OUT 25
 #define LED_COUNT 26
-#define UP_BTN 13
-#define DOWN_BTN 32
+#define UP_BTN 32
+#define DOWN_BTN 13
 #define ARM_BTN 33
 
 // Selecciona uno según tu display.
 //SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_128_32);
-SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_64_48); 
+SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_64_48);
 
 void serialTask();
 void btnsTask();
 void bombTask();
 
 
-bool evBtns = false;
-uint8_t evBtnsData = 0;
+
 
 void setup() {
 
   serialTask();
   btnsTask();
-  bombTask();  
+  bombTask();
+
+
+
 }
 
+
+boolean evBtns = false;
+uint8_t evBtnsData = 0;
+
 void loop() {
+
+  serialTask();
+  btnsTask();
+  bombTask();
 
 }
 
@@ -34,6 +44,7 @@ void btnsTask() {
   static BtnsStates btnsStates = BtnsStates::INIT;
   static uint32_t referenceTime;
   const uint32_t STABLETIMEOUT = 100;
+  static uint8_t lastBtn = 0;
 
   switch (btnsStates) {
     case BtnsStates::INIT: {
@@ -46,24 +57,33 @@ void btnsTask() {
     case BtnsStates::WAITING_PRESS: {
         if (digitalRead(DOWN_BTN) == LOW) {
           referenceTime = millis();
+          lastBtn =DOWN_BTN;
+          btnsStates = BtnsStates::WAITING_STABLE;
+        }
+        else if (digitalRead(UP_BTN) == LOW) {
+          referenceTime = millis();
+          lastBtn = UP_BTN;
           btnsStates = BtnsStates::WAITING_STABLE;
         }
         break;
       }
     case BtnsStates::WAITING_STABLE: {
-        if (digitalRead(DOWN_BTN) == HIGH) {
+
+        if (digitalRead(lastBtn) == HIGH) {
           btnsStates = BtnsStates::WAITING_PRESS;
         }
         else if ( (millis() - referenceTime) >= STABLETIMEOUT) {
           btnsStates = BtnsStates::WAITING_RELEASE;
         }
+
+
         break;
       }
     case BtnsStates::WAITING_RELEASE: {
-        if (digitalRead(DOWN_BTN) == HIGH) {
+        if (digitalRead(lastBtn) == HIGH) {
           evBtns = true;
-          evBtnsData = DOWN_BTN;
-          Serial.println("DOWN_BTN");
+          evBtnsData = lastBtn;
+            Serial.println(lastBtn);
           btnsStates = BtnsStates::WAITING_PRESS;
         }
         break;
@@ -92,7 +112,7 @@ void bombTask() {
         counter = 20;
 
         display.clear();
-        display.drawString(0, 5, String(counter));
+        display.drawString(10, 20, String(counter));
         display.display();
         bombStates = BombStates::WAITING_CONFIG;
         break;
@@ -107,7 +127,15 @@ void bombTask() {
               counter--;
             }
             display.clear();
-            display.drawString(0, 5, String(counter));
+            display.drawString(10, 20, String(counter));
+            display.display();
+          }
+          else if (evBtnsData == UP_BTN) {
+            if (counter < 60) {
+              counter++;
+            }
+            display.clear();
+            display.drawString(10, 20, String(counter));
             display.display();
           }
 
@@ -145,6 +173,11 @@ void serialTask() {
             evBtns = true;
             evBtnsData = DOWN_BTN;
             Serial.println("DOWN_BTN");
+          }
+          else if (dataIn == 'u') {
+            evBtns = true;
+            evBtnsData = UP_BTN;
+            Serial.println("UP_BTN");
           }
         }
 
