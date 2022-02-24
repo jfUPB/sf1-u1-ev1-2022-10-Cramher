@@ -12,6 +12,8 @@ SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_64_48);
 
 void setup() {
 
+  ///
+
 }
 
 void loop() {
