@@ -15,7 +15,7 @@ void btnsTask();
 void bombTask();
 
 
-
+static uint8_t lastBtn = 0;
 
 void setup() {
 
@@ -44,7 +44,7 @@ void btnsTask() {
   static BtnsStates btnsStates = BtnsStates::INIT;
   static uint32_t referenceTime;
   const uint32_t STABLETIMEOUT = 100;
-  static uint8_t lastBtn = 0;
+  ///static uint8_t lastBtn = 0;
 
   switch (btnsStates) {
     case BtnsStates::INIT: {
@@ -57,7 +57,7 @@ void btnsTask() {
     case BtnsStates::WAITING_PRESS: {
         if (digitalRead(DOWN_BTN) == LOW) {
           referenceTime = millis();
-          lastBtn =DOWN_BTN;
+          lastBtn = DOWN_BTN;
           btnsStates = BtnsStates::WAITING_STABLE;
         }
         else if (digitalRead(UP_BTN) == LOW) {
@@ -88,7 +88,7 @@ void btnsTask() {
         if (digitalRead(lastBtn) == HIGH) {
           evBtns = true;
           evBtnsData = lastBtn;
-            Serial.println(lastBtn);
+          Serial.println(lastBtn);
           btnsStates = BtnsStates::WAITING_PRESS;
         }
         break;
@@ -143,22 +143,27 @@ void bombTask() {
             display.drawString(10, 20, String(counter));
             display.display();
           }
-           else if (evBtnsData == ARM_BTN) {
-           bombStates = BombStates::COUNTING;
-           Serial.println("BombStates::COUNTING");
-           Serial.println("La Bomba ha sido armado con Exito");
-           display.clear();
-           display.drawString(10, 20, String("Armado Exitoso"));
-           display.display();
+          else if (evBtnsData == ARM_BTN) {
+            bombStates = BombStates::COUNTING;
+            Serial.println("BombStates::COUNTING");
+            Serial.println("Arm");
+            display.clear();
+            display.drawString(10, 20, String("Arm"));
+            display.display();
           }
         }
         break;
       }
     case BombStates::COUNTING: {
-        const uint32_t TimeLED_COUNT = 500; 
+        const uint32_t TimeLED_COUNT = 1000;
         static uint32_t previousTMinus = 0;
         static uint8_t led_countState = LOW;
         uint32_t currentTMinus = millis();
+        const int len = 7;
+
+        int correctP[] = {32, 32, 13, 13, 32, 13, 33};
+        int userP[len];
+        
 
         if (currentTMinus - previousTMinus >= TimeLED_COUNT) {
           previousTMinus = currentTMinus;
@@ -166,32 +171,53 @@ void bombTask() {
             led_countState = HIGH;
           } else {
             led_countState = LOW;
-            counter--; 
+            counter--;
             display.clear();
             display.drawString(10, 20, String(counter));
             display.display();
           }
           digitalWrite(LED_COUNT, led_countState);
         }
+ 
         
         if (counter == 0) {
           bombStates = BombStates::BOOM;
         }
-            
-    
         
-      
+        if (correctP[0] == userP[0]) {
+          if (correctP[1] == userP[1]) {
+            if (correctP[2] == userP[2]) {
+              if (correctP[3] == userP[3]) {
+                if (correctP[4] == userP[4]) {
+                  if (correctP[5] == userP[5]) {
+                    if (correctP[6] == userP[6]) {
+                      display.clear();
+                      display.drawString(10, 20, "Disarm");
+                      display.display();
+                      bombStates = BombStates::WAITING_CONFIG;
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+        }
+
+
+
         break;
       }
-  
+
     case BombStates::BOOM: {
-        digitalWrite(LED_COUNT, LOW); 
-        digitalWrite(BOMB_OUT, HIGH); 
-        Serial.println("BOOM"); 
+        digitalWrite(LED_COUNT, LOW);
+        digitalWrite(BOMB_OUT, HIGH);
+        Serial.println("BOOM");
         display.clear();
-        display.drawString(10, 20, "BOOM!"); 
+        display.drawString(10, 20, "BOOM!");
         display.display();
-        delay(2500); 
+        delay(2500);
         bombStates = BombStates::INIT;
         break;
       }
@@ -232,9 +258,9 @@ void serialTask() {
             Serial.println("ARM_BTN");
           }
           else if (dataIn == 'a') {
-          evBtns = true;
-          evBtnsData = ARM_BTN;
-          Serial.println("ARM_BTN");
+            evBtns = true;
+            evBtnsData = ARM_BTN;
+            Serial.println("ARM_BTN");
           }
         }
 
