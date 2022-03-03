@@ -104,6 +104,9 @@ void bombTask() {
   enum class BombStates {INIT, WAITING_CONFIG, COUNTING, BOOM};
   static BombStates bombStates = BombStates::INIT;
   static uint8_t counter;
+  static uint8_t secret[7] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
+  static uint8_t pass[7] = {0};
+  static uint8_t passCount = 0;
 
   switch (bombStates) {
     case BombStates::INIT: {
@@ -159,6 +162,23 @@ void bombTask() {
         static uint32_t previousTMinus = 0;
         static uint8_t led_countState = LOW;
         uint32_t currentTMinus = millis();
+
+        if (evBtns == true){
+          evBtns = false
+
+          pass[passCount] = evBtnsData;
+          passCount++;
+
+          if (passCount == 7){
+            bool disarm = true;
+            for (int i = 0; i < 7; i++){
+              if (pass[i] != secret[i]){
+                passCount = 0;
+                disarm = false
+              }
+            }
+          }
+        }
         
 
         if (digitalRead(UP_BTN) == LOW){
