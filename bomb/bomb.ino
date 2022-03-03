@@ -163,37 +163,22 @@ void bombTask() {
         static uint8_t led_countState = LOW;
         uint32_t currentTMinus = millis();
 
-        if (evBtns == true){
-          evBtns = false
+        if (evBtns == true) {
+          evBtns = false;
 
-          pass[passCount] = evBtnsData;
+          pass[passCount] = lastBtn;
           passCount++;
 
-          if (passCount == 7){
+          if (passCount == 7) {
             bool disarm = true;
-            for (int i = 0; i < 7; i++){
-              if (pass[i] != secret[i]){
+            for (int i = 0; i < 7; i++) {
+              if (pass[i] != secret[i]) {
                 passCount = 0;
-                disarm = false
-              }
-            }
-          }
-        }
-        
-
-        if (digitalRead(UP_BTN) == LOW){
-          if (digitalRead(UP_BTN) == LOW){
-            if (digitalRead(DOWN_BTN) == LOW){
-              if (digitalRead(DOWN_BTN) == LOW){
-                if (digitalRead(UP_BTN) == LOW){
-                  if (digitalRead(DOWN_BTN) == LOW){
-                    if (digitalRead(ARM_BTN) == LOW){
-                      display.clear();
-                      display.drawString(10, 20, "Disarm");
-                      display.display();
-                      bombStates = BombStates::WAITING_CONFIG;
-                    }
-                  }
+                disarm = false;
+                if (disarm == true) {
+                  display.clear();
+                  display.drawString(10, 20, String("Disarm"));
+                  display.display();
                 }
               }
             }
