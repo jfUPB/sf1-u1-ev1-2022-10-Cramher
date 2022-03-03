@@ -104,7 +104,7 @@ void bombTask() {
   enum class BombStates {INIT, WAITING_CONFIG, COUNTING, BOOM};
   static BombStates bombStates = BombStates::INIT;
   static uint8_t counter;
-  static uint8_t secret[7] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
+  static uint8_t secret[7] = {32, 32, 13, 13, 32, 13, 33};
   static uint8_t pass[7] = {0};
   static uint8_t passCount = 0;
 
@@ -175,10 +175,10 @@ void bombTask() {
               if (pass[i] != secret[i]) {
                 passCount = 0;
                 disarm = false;
-                if (disarm == true) {
-                  display.clear();
-                  display.drawString(10, 20, String("Disarm"));
-                  display.display();
+              if (disarm == true) {
+                display.clear();
+                display.drawString(10, 20, String("Disarm"));
+                display.display();
                 }
               }
             }
