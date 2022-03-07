@@ -104,8 +104,8 @@ void bombTask() {
   enum class BombStates {INIT, WAITING_CONFIG, COUNTING, BOOM};
   static BombStates bombStates = BombStates::INIT;
   static uint8_t counter;
-  static uint8_t secret[7] = {32, 32, 13, 13, 32, 13, 33};
-  static uint8_t pass[7] = {0};
+  static uint8_t secret[3] = {33, 33, 13};
+  static uint8_t pass[3] = {0};
   static uint8_t passCount = 0;
 
   switch (bombStates) {
@@ -162,30 +162,33 @@ void bombTask() {
         static uint32_t previousTMinus = 0;
         static uint8_t led_countState = LOW;
         uint32_t currentTMinus = millis();
+        passCount = 0;
 
         if (evBtns == true) {
           evBtns = false;
 
-          pass[passCount] = lastBtn;
+          pass[passCount] = evBtnsData;
           passCount++;
 
-          if (passCount == 7) {
+          if (passCount == 3) {
             bool disarm = true;
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 3; i++) {
               if (pass[i] != secret[i]) {
                 passCount = 0;
                 disarm = false;
-              if (disarm == true) {
-                display.clear();
-                display.drawString(10, 20, String("Disarm"));
-                display.display();
-                }
+                break;
               }
+            }
+            if (disarm == true) {
+              bombStates = BombStates :: WAITING_CONFIG;
+              counter = 20;
+              display.clear();
+              display.drawString(10, 20, String("Disarm"));
+              display.display();
+
             }
           }
         }
-        
-
 
         if (currentTMinus - previousTMinus >= TimeLED_COUNT) {
           previousTMinus = currentTMinus;
