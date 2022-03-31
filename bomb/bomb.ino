@@ -104,9 +104,15 @@ void bombTask() {
   enum class BombStates {INIT, WAITING_CONFIG, COUNTING, BOOM};
   static BombStates bombStates = BombStates::INIT;
   static uint8_t counter;
-  static uint8_t secret[3] = {33, 33, 13};
+  static uint8_t secret[3] = {UP_BTN, UP_BTN, DOWN_BTN};
   static uint8_t pass[3] = {0};
   static uint8_t passCount = 0;
+  static const uint32_t TimeLED_COUNT = 500;
+  static uint32_t previousTMinus;
+  static uint8_t led_countState = LOW;
+
+
+  uint32_t currentTMinus = millis();
 
   switch (bombStates) {
     case BombStates::INIT: {
@@ -153,17 +159,13 @@ void bombTask() {
             display.clear();
             display.drawString(10, 20, String("Arm"));
             display.display();
+            passCount = 0;
+            previousTMinus = millis();
           }
         }
         break;
       }
     case BombStates::COUNTING: {
-        const uint32_t TimeLED_COUNT = 500;
-        static uint32_t previousTMinus = 0;
-        static uint8_t led_countState = LOW;
-        uint32_t currentTMinus = millis();
-        passCount = 0;
-
         if (evBtns == true) {
           evBtns = false;
 
@@ -190,7 +192,7 @@ void bombTask() {
           }
         }
 
-        if (currentTMinus - previousTMinus >= TimeLED_COUNT) {
+        if ( (currentTMinus - previousTMinus) >= TimeLED_COUNT) {
           previousTMinus = currentTMinus;
           if (led_countState == LOW) {
             led_countState = HIGH;
